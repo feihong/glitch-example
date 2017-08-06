@@ -1,29 +1,20 @@
 // server.js
 // where your node app starts
 
-// init project
-const express = require('express')
-const app = express()
+const Koa = require('koa')
+const app = new Koa()
+app.use(require('koa-static')('public'))
 
-// we've started you off with Express, 
-// but feel free to use whatever libs or frameworks you'd like through `package.json`.
+const router = require('koa-router')()
 
-// http://expressjs.com/en/starter/static-files.html
-app.use(express.static('public'))
-
-// http://expressjs.com/en/starter/basic-routing.html
-// app.get("/", function (request, response) {
-//   response.sendFile(__dirname + '/views/index.html');
-// })
-
-app.get('/dreams', function (request, response) {
-  response.send(dreams)
+router.get('/dreams', async (ctx, next) => {
+  ctx.response.type = 'json'
+  ctx.response.body = dreams
 })
 
-// could also use the POST body instead of query string: http://expressjs.com/en/api.html#req.body
-app.post('/dreams', function (request, response) {
-  dreams.push(request.query.dream)
-  response.sendStatus(200)
+router.post('/dreams', async (ctx, next) => {
+  dreams.push(ctx.request.query.dream)
+  ctx.response.body = 'OK'
 })
 
 // Simple in-memory store for now
@@ -36,7 +27,10 @@ const dreams = [
   '洗碗',
 ]
 
+app.use(router.routes())
+app.use(router.allowedMethods())
+
 // listen for requests :)
-const listener = app.listen(process.env.PORT, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
+const listener = app.listen(process.env.PORT, function() {
+  console.log('Your app is listening on port ' + listener.address().port)
 })
